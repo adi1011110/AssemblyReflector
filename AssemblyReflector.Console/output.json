@@ -1,0 +1,31 @@
+{
+  "ControllersData": [
+    {
+      "ControllerName": "HomeController",
+      "Endpoints": [
+        {
+          "HttpMethod": "HttpGet",
+          "Name": "Index",
+          "Params": []
+        },
+        {
+          "HttpMethod": "HttpPost",
+          "Name": "Subscribe",
+          "Params": [
+            "[FromQuery] String email"
+          ]
+        },
+        {
+          "HttpMethod": "HttpGet",
+          "Name": "Privacy",
+          "Params": []
+        },
+        {
+          "HttpMethod": null,
+          "Name": "Error",
+          "Params": []
+        }
+      ]
+    }
+  ]
+}

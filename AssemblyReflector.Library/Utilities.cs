@@ -6,13 +6,23 @@ public static class Utilities
 {
     public static bool InheritsFromType(Type type, string baseType)
     {
-        while (!string.IsNullOrEmpty(type.BaseType.Name))
+        if(type == null)
+        {
+            return false;
+        }
+
+        while (!string.IsNullOrEmpty(type?.BaseType?.Name))
         {
             if (type.BaseType.Name == baseType)
             {
                 return true;
             }
             type = type.BaseType;
+
+            if(type == null)
+            {
+                return false;
+            }
         }
 
         return false;

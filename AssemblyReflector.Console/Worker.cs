@@ -25,13 +25,28 @@ public class Worker : BackgroundService
     {
         _logger.LogInformation("Worker started");
 
-        var result = _assemblyReflectorService.Reflect(_assemblyConfig);
-
-        while (!cancellationToken.IsCancellationRequested)
+        try
         {
-            await Task.Delay(2000, cancellationToken);
-        }
+            var result = _assemblyReflectorService.Reflect(_assemblyConfig);
 
-        _logger.LogInformation("Logger stopped");
+            string projectDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)
+                .Parent.Parent.Parent.FullName;
+
+            string filePath = Path.Combine(projectDirectory, "output.json");
+
+            using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+            using (StreamWriter writer = new StreamWriter(fs))
+            {
+                writer.Write(result);
+            }
+        }
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex.Message);
+        }
+        finally
+        {
+            _logger.LogInformation("Worker stopped");
+        }
     }
 }

@@ -37,7 +37,7 @@ public class AssemblyReflectorService : IAssemblyReflectorService
 
     private string _ExtractAssemblyData(Assembly assembly)
     {
-        string baseControllerName = "BaseController";
+        string baseControllerName = "Controller";
 
         var controllerTypes = assembly
             .GetTypes()
@@ -57,9 +57,11 @@ public class AssemblyReflectorService : IAssemblyReflectorService
             ? controllerName.Substring(0, controllerName.Length - "Controller".Length)
             : controllerName;
 
-            var endpointTypes = t.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                                 .Where(m => m.GetCustomAttributes()
-                                              .Any(a => Utilities.IsHttpAttribute(a.GetType())))
+            var methods = t.GetMethods().Where(m => m.IsPublic).ToList();
+
+            var endpointTypes = t.GetMethods(BindingFlags.Public 
+                                    | BindingFlags.Instance
+                                    | BindingFlags.DeclaredOnly)
                                  .ToList();
 
             var endpointNames = endpointTypes.Select(e => e.Name).ToList();
@@ -71,7 +73,12 @@ public class AssemblyReflectorService : IAssemblyReflectorService
                  .FirstOrDefault(a =>
                     Utilities.IsHttpAttribute(a.GetType()))?.GetType().Name.Replace("Attribute", ""),
                 Name = e.Name,
-                Params = e.GetParameters().Select(p => p.ParameterType + " " + p.Name)
+                Params = e.GetParameters().Select(p => {
+                    var attribute = p.GetCustomAttributes().FirstOrDefault();
+                    var attributeName = attribute != null ? 
+                    $"[{attribute.GetType().Name.Replace("Attribute", "")}]" : "";
+                    return $"{attributeName} {p.ParameterType.Name} {p.Name}";
+                })
             });
 
             var controllerData = new ControllerData
@@ -84,6 +91,7 @@ public class AssemblyReflectorService : IAssemblyReflectorService
 
         });
 
-        return JsonSerializer.Serialize(reflectionData);
+        return JsonSerializer.Serialize(reflectionData, 
+            new JsonSerializerOptions { WriteIndented = true });
     }
 }
